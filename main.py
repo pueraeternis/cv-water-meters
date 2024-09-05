@@ -1,13 +1,5 @@
-import yaml
-
 from src.datasets import YOLODatasetDigits, YOLODatasetPanels
-
-
-def load_config(config_path: str) -> dict:
-    """Загружает конфиграционный файл."""
-
-    with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+from src.utils import load_config
 
 
 def main():
