@@ -1,0 +1,62 @@
+panels:
+  dataset:
+    dataset_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels"
+    images_data_path: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/images"
+    labels_data_path: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/data.csv"
+    class_labels: 
+      0: "Panel"
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+    random_state: 42
+  train:
+    task: "segment"
+    model_path: "yolov8n-seg.pt"
+    yaml_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels/data.yaml"
+    epochs: 100
+    batch_size: 32
+    img_size: 640
+    project_path: "/home/vbabchuk/research/cv-water-meters/models/panels/runs/training"
+  test:
+    task: "segment"
+    model_path: "/home/vbabchuk/research/cv-water-meters/models/panels/panels_base.pt"
+    imgs_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels/test/images"
+    img_size: 640
+    conf: 0.25
+    project_path: "/home/vbabchuk/research/cv-water-meters/models/panels/runs/predicting"
+
+digits:
+  dataset:
+    dataset_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits"
+    images_data_path: "/data1/jupiter/label-data/datasets/water-meters/images"
+    labels_data_path: "/data1/jupiter/label-data/datasets/water-meters/labels"
+    class_labels:
+      0: "0"
+      1: "1"
+      2: "2"
+      3: "3"
+      4: "4"
+      5: "5"
+      6: "6"
+      7: "7"
+      8: "8"
+      9: "9"
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+    random_state: 42
+  train:
+    task: "detect"
+    model_path: "yolov8n.pt"
+    yaml_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits/data.yaml"
+    epochs: 500
+    batch_size: 32
+    img_size: 640
+    project_path: "/home/vbabchuk/research/cv-water-meters/models/digits/runs/training"
+  test:
+    task: "detect"
+    model_path: "/home/vbabchuk/research/cv-water-meters/models/digits/digits_base.pt"
+    imgs_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits/test/images"
+    img_size: 640
+    conf: 0.25
+    project_path: "/home/vbabchuk/research/cv-water-meters/models/digits/runs/predicting"
