@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "cv-water-meters"
+version = "0.1.0"
+description = "YOLO model training for meter reading recognition."
+authors = ["Vitaliy Babchuk <vbabchuk@sigma-it.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
