@@ -1,11 +1,9 @@
-from unittest import mock
-
 import pytest
 
 from src.utils import load_config
 
 
-@pytest.fixture
+@pytest.fixture(name="yaml_data")
 def sample_yaml_data():
     return """
     key1: value1
@@ -15,15 +13,14 @@ def sample_yaml_data():
     """
 
 
-def test_load_config(sample_yaml_data):
-    # Мокируем open, чтобы он возвращал sample_yaml_data как содержимое файла
-    with mock.patch("builtins.open", mock.mock_open(read_data=sample_yaml_data)):
-        config = load_config(
-            "dummy_path.yaml"
-        )  # Пусть путь будет фиктивным, т.к. мы мокируем open
+def test_load_config(mocker, yaml_data):
+    # Используем mocker, чтобы замокать open
+    mock_open = mocker.mock_open(read_data=yaml_data)
+    mocker.patch("builtins.open", mock_open)
 
-        # Проверяем, что данные загружены корректно
-        assert isinstance(config, dict)
-        assert config["key1"] == "value1"
-        assert config["key2"]["subkey1"] == "value2"
-        assert config["key2"]["subkey2"] == "value3"
+    config = load_config("dummy_path.yaml")
+
+    assert isinstance(config, dict)
+    assert config["key1"] == "value1"
+    assert config["key2"]["subkey1"] == "value2"
+    assert config["key2"]["subkey2"] == "value3"
