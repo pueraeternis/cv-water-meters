@@ -1,2 +1,3 @@
-# cv-water-meters
-Water meter reading recognition
+# Water meter reading recognition
+
+YOLO model training for meter reading recognition.
