@@ -5,6 +5,8 @@ from src.utils import load_config
 
 @pytest.fixture(name="yaml_data")
 def sample_yaml_data():
+    """Фикстура для создания тестового YAML."""
+
     return """
     key1: value1
     key2:
@@ -14,6 +16,8 @@ def sample_yaml_data():
 
 
 def test_load_config(mocker, yaml_data):
+    """Тестирует загрузку конфигурации."""
+
     # Используем mocker, чтобы замокать open
     mock_open = mocker.mock_open(read_data=yaml_data)
     mocker.patch("builtins.open", mock_open)
