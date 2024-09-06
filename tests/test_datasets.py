@@ -1,10 +1,9 @@
 import os
 
 import pytest
+import yaml
 
-from src.datasets import train_test_split  # Замените mymodule на имя вашего модуля
-
-# Тест функции train_test_split
+from src.datasets import create_config_file, train_test_split
 
 
 def test_train_test_split_proportions(mocker, tmpdir):
@@ -110,3 +109,93 @@ def test_train_test_split_invalid_ratio(tmpdir):
             str(output_dir),
             split_ratios=(0.6, 0.2, 0.1),
         )
+
+
+def test_create_config_file_correct_yaml_dump(mocker):
+    # Мокируем функцию open и yaml.dump
+    mock_open = mocker.mock_open()
+    mocker.patch("builtins.open", mock_open)
+    mock_yaml_dump = mocker.patch("yaml.dump")
+
+    # Входные данные для теста
+    dataset_path = "/path/to/dataset"
+    class_labels = {0: "ClassA", 1: "ClassB"}
+    yaml_path = "/path/to/config.yaml"
+
+    # Вызываем тестируемую функцию
+    create_config_file(dataset_path, class_labels, yaml_path)
+
+    # Проверяем, что open был вызван с правильными аргументами
+    mock_open.assert_called_once_with(yaml_path, "w", encoding="utf-8")
+
+    # Проверяем, что yaml.dump был вызван дважды
+    assert mock_yaml_dump.call_count == 2
+
+    # Проверяем, что первый вызов yaml.dump записал путь к данным
+    mock_yaml_dump.assert_any_call(
+        {
+            "path": dataset_path,
+            "train": "train/images",
+            "val": "val/images",
+            "test": "test/images",
+        },
+        mock_open(),
+        Dumper=yaml.SafeDumper,
+        default_flow_style=False,
+        allow_unicode=True,
+    )
+
+    # Проверяем, что второй вызов yaml.dump записал метки классов
+    mock_yaml_dump.assert_any_call(
+        {"names": class_labels},
+        mock_open(),
+        Dumper=yaml.SafeDumper,
+        default_flow_style=False,
+        allow_unicode=True,
+    )
+
+
+def test_create_config_file_file_creation(mocker):
+    # Мокируем функцию open
+    mock_open = mocker.mock_open()
+    mocker.patch("builtins.open", mock_open)
+
+    # Входные данные для теста
+    dataset_path = "/path/to/dataset"
+    class_labels = {0: "ClassA", 1: "ClassB"}
+    yaml_path = "/path/to/new_config.yaml"
+
+    # Вызываем тестируемую функцию
+    create_config_file(dataset_path, class_labels, yaml_path)
+
+    # Проверяем, что open был вызван с правильными аргументами
+    # (т.е. файл был открыт для записи)
+    mock_open.assert_called_once_with(yaml_path, "w", encoding="utf-8")
+
+    # Проверяем, что файл был записан
+    handle = mock_open()
+    handle.write.assert_called()  # Убедимся, что была запись в файл
+
+
+def test_create_config_file_io_error(mocker):
+    # Мокируем функцию open, чтобы она выбрасывала IOError
+    mock_open = mocker.mock_open()
+    mock_open.side_effect = IOError("Unable to write file")
+    mocker.patch("builtins.open", mock_open)
+
+    # Мокируем print для проверки вывода ошибки
+    mock_print = mocker.patch("builtins.print")
+
+    # Входные данные для теста
+    dataset_path = "/path/to/dataset"
+    class_labels = {0: "ClassA", 1: "ClassB"}
+    yaml_path = "/path/to/faulty_config.yaml"
+
+    # Вызываем тестируемую функцию
+    create_config_file(dataset_path, class_labels, yaml_path)
+
+    # Проверяем, что open вызвал IOError
+    mock_open.assert_called_once_with(yaml_path, "w", encoding="utf-8")
+
+    # Проверяем, что сообщение об ошибке было напечатано
+    mock_print.assert_called_once_with("Error creating YAML file: Unable to write file")

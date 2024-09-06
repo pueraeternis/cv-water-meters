@@ -2,7 +2,7 @@
 data/
 
 # YOLO temp data
-models/panels/runs/
+models/train
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

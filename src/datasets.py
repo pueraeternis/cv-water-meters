@@ -74,13 +74,11 @@ def create_config_file(
         "train": "train/images",
         "val": "val/images",
         "test": "test/images",
-        "names": class_labels,
     }
 
-    try:
-        # Гарантирует, что список "names" появится после подкаталогов
-        names_data = data.pop("names")
+    names_data = class_labels
 
+    try:
         with open(yaml_path, "w", encoding="utf-8") as yaml_file:
             yaml.dump(
                 data,
