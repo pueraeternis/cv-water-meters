@@ -7,15 +7,13 @@ panels:
     class_labels: 
       0: "Panel"
   train:
-    task: "segment"
     model_path: "yolov8n-seg.pt"
     yaml_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/panels/data.yaml"
-    epochs: 100
+    epochs: 10
     batch_size: 32
     img_size: 640
     project_path: "/home/vbabchuk/research/cv-water-meters/models/panels/runs/training"
   test:
-    task: "segment"
     model_path: "/home/vbabchuk/research/cv-water-meters/models/panels/panels_base.pt"
     imgs_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/panels/test/images"
     img_size: 640
@@ -39,15 +37,13 @@ digits:
       8: "8"
       9: "9"
   train:
-    task: "detect"
     model_path: "yolov8n.pt"
     yaml_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/digits/data.yaml"
-    epochs: 500
+    epochs: 10
     batch_size: 32
     img_size: 640
     project_path: "/home/vbabchuk/research/cv-water-meters/models/digits/runs/training"
   test:
-    task: "detect"
     model_path: "/home/vbabchuk/research/cv-water-meters/models/digits/digits_base.pt"
     imgs_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/digits/test/images"
     img_size: 640
