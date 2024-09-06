@@ -1,8 +1,10 @@
 # Data for train model
 data/
 
-# YOLO temp data
+# YOLO data
 models/train
+yolov8n-seg.pt
+yolov8n.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
