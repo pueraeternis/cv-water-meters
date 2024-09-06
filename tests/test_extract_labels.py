@@ -3,12 +3,11 @@ import tempfile
 
 import pytest
 
-from src.datasets import extract_labels, save_label
+from src.extract_labels import extract_labels, save_label
 
 
 @pytest.fixture(name="sample_csv_data")
 def create_sample_csv_data():
-    """Фикстура для создания тестового CSV."""
 
     return """photo_name,value,location
 id_53_value_595_825.jpg,595.825,"{'type': 'polygon', 'data': [{'x': 0.30788, 'y': 0.30207}, {'x': 0.30676, 'y': 0.32731}, {'x': 0.53501, 'y': 0.33068}, {'x': 0.53445, 'y': 0.33699}, {'x': 0.56529, 'y': 0.33741}, {'x': 0.56697, 'y': 0.29786}, {'x': 0.53501, 'y': 0.29786}, {'x': 0.53445, 'y': 0.30417}]}"
@@ -18,14 +17,12 @@ id_553_value_65_475.jpg,65.475,"{'type': 'polygon', 'data': [{'x': 0.26133, 'y':
 
 @pytest.fixture(name="temp_directory")
 def create_temp_directory():
-    """Создает временный каталог для хранения меток."""
 
     with tempfile.TemporaryDirectory() as temp_dir:
         yield temp_dir
 
 
 def test_save_label(temp_directory):
-    """Тестирует функцию сохранения метки."""
 
     image_name = "test_image.jpg"
     label_str = "0 0.30788 0.30207 0.30676 0.32731"
@@ -43,18 +40,17 @@ def test_save_label(temp_directory):
 
 
 def test_extract_labels(mocker, sample_csv_data, temp_directory):
-    """Тестирует функцию извлечения меток."""
 
-    labels_data_path = os.path.join(temp_directory, "labels.csv")
+    labels_data_filepath = os.path.join(temp_directory, "labels.csv")
 
     # Создаем тестовый CSV файл
-    with open(labels_data_path, "w", encoding="utf-8") as f:
+    with open(labels_data_filepath, "w", encoding="utf-8") as f:
         f.write(sample_csv_data)
 
     # Мокаем функцию save_label
-    mock_save_label = mocker.patch("src.datasets.save_label")
+    mock_save_label = mocker.patch("src.extract_labels.save_label")
 
-    extract_labels(labels_data_path)
+    extract_labels(labels_data_filepath)
 
     # Проверяем, что save_label была вызвана дважды
     assert mock_save_label.call_count == 2

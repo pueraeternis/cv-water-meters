@@ -1,18 +1,15 @@
 panels:
   dataset:
-    dataset_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels"
+    dataset_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/panels"
     images_data_path: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/images"
-    labels_data_path: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/data.csv"
+    labels_data_path: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/labels"
+    labels_data_filepath: "/home/vbabchuk/research/cv-water-meters/data/WaterMeters/data.csv"
     class_labels: 
       0: "Panel"
-    train_ratio: 0.7
-    val_ratio: 0.15
-    test_ratio: 0.15
-    random_state: 42
   train:
     task: "segment"
     model_path: "yolov8n-seg.pt"
-    yaml_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels/data.yaml"
+    yaml_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/panels/data.yaml"
     epochs: 100
     batch_size: 32
     img_size: 640
@@ -20,14 +17,14 @@ panels:
   test:
     task: "segment"
     model_path: "/home/vbabchuk/research/cv-water-meters/models/panels/panels_base.pt"
-    imgs_path: "/home/vbabchuk/research/cv-water-meters/datasets/panels/test/images"
+    imgs_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/panels/test/images"
     img_size: 640
     conf: 0.25
     project_path: "/home/vbabchuk/research/cv-water-meters/models/panels/runs/predicting"
 
 digits:
   dataset:
-    dataset_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits"
+    dataset_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/digits"
     images_data_path: "/data1/jupiter/label-data/datasets/water-meters/images"
     labels_data_path: "/data1/jupiter/label-data/datasets/water-meters/labels"
     class_labels:
@@ -41,14 +38,10 @@ digits:
       7: "7"
       8: "8"
       9: "9"
-    train_ratio: 0.7
-    val_ratio: 0.15
-    test_ratio: 0.15
-    random_state: 42
   train:
     task: "detect"
     model_path: "yolov8n.pt"
-    yaml_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits/data.yaml"
+    yaml_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/digits/data.yaml"
     epochs: 500
     batch_size: 32
     img_size: 640
@@ -56,7 +49,7 @@ digits:
   test:
     task: "detect"
     model_path: "/home/vbabchuk/research/cv-water-meters/models/digits/digits_base.pt"
-    imgs_path: "/home/vbabchuk/research/cv-water-meters/datasets/digits/test/images"
+    imgs_path: "/home/vbabchuk/research/cv-water-meters/data/datasets/digits/test/images"
     img_size: 640
     conf: 0.25
     project_path: "/home/vbabchuk/research/cv-water-meters/models/digits/runs/predicting"

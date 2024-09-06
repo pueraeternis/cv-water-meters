@@ -4,10 +4,10 @@ import os
 import pandas as pd
 
 
-def extract_labels(labels_data_path: str) -> None:
+def extract_labels(labels_data_filepath: str) -> None:
     """Извлекает координаты полигона панели счетчика."""
 
-    data = pd.read_csv(labels_data_path)
+    data = pd.read_csv(labels_data_filepath)
     for _, row in data.iterrows():
         image_name = row["photo_name"]
         class_label = ["0"]
@@ -19,7 +19,7 @@ def extract_labels(labels_data_path: str) -> None:
         label = class_label + coordinates
         label_str = " ".join(label)
 
-        labels_path = os.path.join(os.path.dirname(labels_data_path), "labels")
+        labels_path = os.path.join(os.path.dirname(labels_data_filepath), "labels")
         save_label(image_name, label_str, labels_path)
 
 
