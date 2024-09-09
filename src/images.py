@@ -1,3 +1,13 @@
+"""
+Steps
+
+find region using the poly points
+create mask using the poly points
+do mask op to crop
+add white bg if needed
+
+"""
+
 import cv2
 import numpy as np
 
