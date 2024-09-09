@@ -1,51 +1,49 @@
-"""
-Steps
-
-find region using the poly points
-create mask using the poly points
-do mask op to crop
-add white bg if needed
-
-"""
+import os
 
 import cv2
 import numpy as np
-
-img = cv2.imread("data/WaterMeters/images/id_1243_value_13_474.jpg")
-height, width, _ = img.shape
-
-labels_path = "data/WaterMeters/labels/id_1243_value_13_474.txt"
-with open(labels_path) as f:
-    data = f.read()
-
-labels = [float(point) for point in data[2:].split(" ")]
-
-pts = np.array(
-    [[x * width, y * height] for x, y in zip(labels[::2], labels[1::2])], dtype=np.int32
-)
+from cv2.typing import MatLike
 
 
-## (1) Crop the bounding rect
-rect = cv2.boundingRect(pts)
-x, y, w, h = rect
-croped = img[y : y + h, x : x + w].copy()
-
-## (2) make mask
-pts = pts - pts.min(axis=0)
-
-mask = np.zeros(croped.shape[:2], np.uint8)
-cv2.drawContours(mask, [pts], -1, (255, 255, 255), -1, cv2.LINE_AA)
-
-## (3) do bit-op
-dst = cv2.bitwise_and(croped, croped, mask=mask)
-
-## (4) add the white background
-bg = np.ones_like(croped, np.uint8) * 255
-cv2.bitwise_not(bg, bg, mask=mask)
-dst2 = bg + dst
+def extract_coordinates(labels: str, width: int, height: int) -> np.ndarray:
+    coords: list[str] = labels[2:].split(" ")
+    labels_rel = [float(point) for point in coords]
+    pts = np.array(
+        [[x * width, y * height] for x, y in zip(labels_rel[::2], labels_rel[1::2])],
+        dtype=np.int32,
+    )
+    return pts
 
 
-cv2.imwrite("croped.png", croped)
-cv2.imwrite("mask.png", mask)
-cv2.imwrite("dst.png", dst)
-cv2.imwrite("dst2.png", dst2)
+def crop_image(image: MatLike, pts: np.ndarray) -> tuple[np.ndarray, int, int]:
+    rect = cv2.boundingRect(pts)
+    x, y, w, h = rect
+    croped = image[y : y + h, x : x + w].copy()
+
+    return croped, x, y
+
+
+def crop_panel(image_path: str, labels_path: str) -> None:
+    img = cv2.imread(image_path)
+    height, width, _ = img.shape
+
+    with open(labels_path) as f:
+        data = f.read()
+
+    pts = extract_coordinates(data, width, height)
+    croped_img, x, y = crop_image(img, pts)
+
+    img_name = os.path.basename(image_path)
+    im_name, ext = os.path.splitext(img_name)
+    output_name = f"{im_name}_topleft_{x}_{y}{ext}"
+    cv2.imwrite(output_name, croped_img)
+
+
+def main():
+    img_path = "data/WaterMeters/images/id_1240_value_28_306.jpg"
+    lbl_path = "data/WaterMeters/labels/id_1240_value_28_306.txt"
+    crop_panel(img_path, lbl_path)
+
+
+if __name__ == "__main__":
+    main()
