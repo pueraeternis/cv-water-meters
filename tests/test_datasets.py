@@ -1,114 +1,58 @@
 import os
 
-import pytest
 import yaml
 
-from src.datasets import create_config_file, train_test_split
+from src.datasets import copy_split_data, create_config_file, is_file, train_test_split
 
 
-def test_train_test_split_proportions(mocker, tmpdir):
-    # Мокаем os.makedirs и shutil.copy
-    mock_makedirs = mocker.patch("os.makedirs")
-    mock_copy = mocker.patch("shutil.copy")
+def test_is_file(tmpdir):
+    test_dir = tmpdir.mkdir("test_dir")
+    file_path = test_dir.join("test_file.txt")
+    file_path.write("test content")
 
-    # Задаем тестовые данные
+    assert is_file(str(test_dir), "test_file.txt") is True
+    assert is_file(str(test_dir), "non_existing_file.txt") is False
+
+
+def test_copy_split_data(tmpdir):
     image_dir = tmpdir.mkdir("images")
     label_dir = tmpdir.mkdir("labels")
     output_dir = tmpdir.mkdir("output")
 
-    # Создаем фейковые изображения и метки
-    for i in range(10):
-        image_dir.join(f"image_{i}.jpg").write("")
-        label_dir.join(f"image_{i}.txt").write("")
+    img_file = image_dir.join("image1.jpg")
+    lbl_file = label_dir.join("label1.txt")
+    img_file.write("image content")
+    lbl_file.write("label content")
 
-    # Запускаем функцию с пропорциями 0.7, 0.15, 0.15
+    files = [("image1.jpg", "label1.txt")]
 
-    train_test_split(
-        str(image_dir), str(label_dir), str(output_dir), split_ratios=(0.7, 0.15, 0.15)
-    )
+    copy_split_data("train", files, str(image_dir), str(label_dir), str(output_dir))
 
-    # Проверяем, что директории были созданы
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "train", "images"), exist_ok=True
-    )
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "train", "labels"), exist_ok=True
-    )
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "val", "images"), exist_ok=True
-    )
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "val", "labels"), exist_ok=True
-    )
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "test", "images"), exist_ok=True
-    )
-    mock_makedirs.assert_any_call(
-        os.path.join(output_dir, "test", "labels"), exist_ok=True
-    )
-
-    # Проверяем, что копирование файлов произошло для всех частей
-    assert mock_copy.call_count == 20  # 10 изображений + 10 меток
-
-    # Проверка распределения: 7 для train, 1 для val, 2 для test
-    train_files = mock_copy.call_args_list[
-        :14
-    ]  # Первые 14 вызовов для train (7 изображений и 7 меток)
-    val_files = mock_copy.call_args_list[
-        14:16
-    ]  # 2 вызова для val (1 изображение и 1 метка)
-    test_files = mock_copy.call_args_list[
-        16:
-    ]  # Оставшиеся 4 вызова для test (2 изображения и 2 метки)
-
-    assert len(train_files) == 14
-    assert len(val_files) == 2
-    assert len(test_files) == 4
+    assert os.path.exists(output_dir.join("train", "images", "image1.jpg"))
+    assert os.path.exists(output_dir.join("train", "labels", "label1.txt"))
 
 
-def test_train_test_split_value_error(tmpdir):
-
-    # Задаем тестовые данные
+def test_train_test_split(tmpdir):
     image_dir = tmpdir.mkdir("images")
     label_dir = tmpdir.mkdir("labels")
-    output_dir = tmpdir.mkdir("output")
 
-    # Создаем фейковые изображения и метки (специально разное количество)
+    # Создаем 10 пар изображений и меток
     for i in range(10):
-        image_dir.join(f"image_{i}.jpg").write("")
-    for i in range(9):  # Создаем на одно меньше меток
-        label_dir.join(f"image_{i}.txt").write("")
+        image_file = image_dir.join(f"image{i}.jpg")
+        label_file = label_dir.join(f"label{i}.txt")
+        image_file.write(f"image content {i}")
+        label_file.write(f"label content {i}")
 
-    # Проверка на ошибку несоответствия количества изображений и меток
-    with pytest.raises(ValueError, match="The number of images and labels must match"):
-        train_test_split(
-            str(image_dir),
-            str(label_dir),
-            str(output_dir),
-            split_ratios=(0.7, 0.15, 0.15),
-        )
+    train_files, val_files, test_files = train_test_split(
+        str(image_dir), str(label_dir)
+    )
 
-
-def test_train_test_split_invalid_ratio(tmpdir):
-
-    # Задаем тестовые данные
-    image_dir = tmpdir.mkdir("images")
-    label_dir = tmpdir.mkdir("labels")
-    output_dir = tmpdir.mkdir("output")
-
-    # Создаем фейковые изображения и метки
-    for i in range(10):
-        image_dir.join(f"image_{i}.jpg").write("")
-        label_dir.join(f"image_{i}.txt").write("")
-
-    # Проверка на ошибку неверной суммы пропорций
-    with pytest.raises(ValueError, match="The sum of the shares must be equal to 1"):
-        train_test_split(
-            str(image_dir),
-            str(label_dir),
-            str(output_dir),
-            split_ratios=(0.6, 0.2, 0.1),
-        )
+    assert len(train_files) == 7
+    assert len(val_files) == 1
+    assert len(test_files) == 2
+    assert all(isinstance(pair, tuple) for pair in train_files)
+    assert all(isinstance(pair, tuple) for pair in val_files)
+    assert all(isinstance(pair, tuple) for pair in test_files)
 
 
 def test_create_config_file_correct_yaml_dump(mocker):

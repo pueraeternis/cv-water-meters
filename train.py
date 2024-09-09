@@ -1,32 +1,25 @@
 import torch
 from ultralytics.models.yolo.segment import SegmentationTrainer
 
-from src.datasets import create_config_file, train_test_split
+from src.config import TrainConfig, dataset_config, train_config
+from src.datasets import copy_split_data, create_config_file, train_test_split
 from src.labels import extract_labels
-from src.utils import load_config
 
 
-def train_model(
-    model_path: str,
-    yaml_path: str,
-    epochs: int,
-    batch_size: int,
-    img_size: int,
-    project_path: str,
-) -> None:
+def train_model(config: TrainConfig, epochs: int = 1) -> None:
     """Обучает модель YOLO."""
 
     torch.cuda.empty_cache()
 
     # Задача сегментации изображения
     args = {
-        "model": model_path,
-        "data": yaml_path,
+        "model": config.model_path,
+        "data": config.yaml_path,
         "epochs": epochs,
-        "batch": batch_size,
-        "imgsz": img_size,
+        "batch": config.batch_size,
+        "imgsz": config.img_size,
         "save": True,
-        "project": project_path,
+        "project": config.project_path,
         "device": 0,
         "plots": True,
     }
@@ -36,29 +29,34 @@ def train_model(
 
 
 def main():
-
-    # Загрузка конфигурации
-    config = load_config("config.yaml")
-
     # Конвертация меток в формат YOLO
-    extract_labels(config["panels"]["dataset"]["labels_data_filepath"])
+    extract_labels(dataset_config.labels_data_filepath)
 
     # Разделение датасета на обучающий, проверочный и тестовый
-    train_test_split(
-        image_dir=config["panels"]["dataset"]["images_data_path"],
-        label_dir=config["panels"]["dataset"]["labels_data_path"],
-        output_dir=config["panels"]["dataset"]["dataset_path"],
+    datasets = train_test_split(
+        image_dir=dataset_config.images_data_path,
+        label_dir=dataset_config.labels_data_path,
     )
+
+    # Копирование изображений и меток в train, val, test
+    for dir_name, dataset_name in zip(["train", "val", "test"], datasets):
+        copy_split_data(
+            dir_name,
+            dataset_name,
+            dataset_config.images_data_path,
+            dataset_config.labels_data_path,
+            dataset_config.dataset_path,
+        )
 
     # Создание конфига для обучения модели
     create_config_file(
-        dataset_path=config["panels"]["dataset"]["dataset_path"],
-        class_labels=config["panels"]["dataset"]["class_labels"],
-        yaml_path=config["panels"]["train"]["yaml_path"],
+        dataset_path=dataset_config.dataset_path,
+        class_labels=dataset_config.class_labels,
+        yaml_path=train_config.yaml_path,
     )
 
     # Обучение модели
-    train_model(**config["panels"]["train"])
+    train_model(train_config)
 
 
 if __name__ == "__main__":
