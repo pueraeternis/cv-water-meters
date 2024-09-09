@@ -19,6 +19,15 @@ class TrainConfig:
     project_path: str
 
 
+@dataclass
+class TestConfig:
+    model_path: str
+    imgs_path: str
+    img_size: int
+    conf: float
+    project_path: str
+
+
 dataset_config = DatasetConfig(
     dataset_path="/home/vbabchuk/research/cv-water-meters/data/datasets/panels",
     images_data_path="/home/vbabchuk/research/cv-water-meters/data/WaterMeters/images",
@@ -33,4 +42,12 @@ train_config = TrainConfig(
     batch_size=32,
     img_size=640,
     project_path="/home/vbabchuk/research/cv-water-meters/models/train/panels/runs/training",
+)
+
+test_config = TestConfig(
+    model_path="/home/vbabchuk/research/cv-water-meters/models/inference/panels_base.pt",
+    imgs_path="/home/vbabchuk/research/cv-water-meters/data/datasets/panels/test/images",
+    img_size=640,
+    conf=0.25,
+    project_path="/home/vbabchuk/research/cv-water-meters/models/train/panels/runs/predicting",
 )
