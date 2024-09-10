@@ -54,3 +54,11 @@ train_config = TrainConfig(
     img_size=640,
     project_path="/home/vbabchuk/research/cv-water-meters/models/train/digits/runs/training",
 )
+
+test_config = TestConfig(
+    model_path="/home/vbabchuk/research/cv-water-meters/models/inference/digits_base.pt",
+    imgs_path="/home/vbabchuk/research/cv-water-meters/data/datasets/digits/test/images",
+    img_size=640,
+    conf=0.25,
+    project_path="/home/vbabchuk/research/cv-water-meters/models/train/digits/runs/predicting",
+)
