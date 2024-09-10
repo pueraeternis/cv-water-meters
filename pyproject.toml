@@ -2,7 +2,7 @@
 name = "cv-water-meters"
 version = "0.1.0"
 description = "YOLO model training for meter reading recognition."
-authors = ["Vitaliy Babchuk <vbabchuk@sigma-it.ru>"]
+authors = ["Vitaliy Babchuk <babchuk.vit@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

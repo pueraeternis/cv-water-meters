@@ -1,8 +1,9 @@
 import torch
-from config import TrainConfig, dataset_config, train_config
-from datasets import copy_split_data, create_config_file, train_test_split
-from labels import extract_label_studio_labels
-from ultralytics import YOLO
+from ultralytics.models.yolo.segment import SegmentationTrainer
+
+from src.datasets import copy_split_data, create_config_file, train_test_split
+from src.panels.config import TrainConfig, dataset_config, train_config
+from src.panels.labels import extract_labels
 
 
 def train_model(config: TrainConfig, epochs: int = 1) -> None:
@@ -10,32 +11,31 @@ def train_model(config: TrainConfig, epochs: int = 1) -> None:
 
     torch.cuda.empty_cache()
 
-    # Задача определения объектов
-    model = YOLO(config.model_path)
-    model.train(
-        data=config.yaml_path,
-        epochs=epochs,
-        imgsz=config.img_size,
-        batch=config.batch_size,
-        save=True,
-        project=config.project_path,
-        device=0,
-        plots=True,
-    )
+    # Задача сегментации изображения
+    args = {
+        "model": config.model_path,
+        "data": config.yaml_path,
+        "epochs": epochs,
+        "batch": config.batch_size,
+        "imgsz": config.img_size,
+        "save": True,
+        "project": config.project_path,
+        "device": 0,
+        "plots": True,
+    }
+
+    trainer = SegmentationTrainer(overrides=args)
+    trainer.train()
 
 
 def main():
     # Конвертация меток в формат YOLO
-    extract_label_studio_labels(
-        dataset_config.labels_data_path,
-        dataset_config.labels_output_path,
-        dataset_config.class_labels,
-    )
+    extract_labels(dataset_config.labels_data_filepath)
 
     # Разделение датасета на обучающий, проверочный и тестовый
     datasets = train_test_split(
         image_dir=dataset_config.images_data_path,
-        label_dir=dataset_config.labels_output_path,
+        label_dir=dataset_config.labels_data_path,
     )
 
     # Копирование изображений и меток в train, val, test
@@ -44,7 +44,7 @@ def main():
             dir_name,
             dataset_name,
             dataset_config.images_data_path,
-            dataset_config.labels_output_path,
+            dataset_config.labels_data_path,
             dataset_config.dataset_path,
         )
 

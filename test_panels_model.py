@@ -1,5 +1,6 @@
-from config import TestConfig, test_config
 from ultralytics import YOLO
+
+from src.panels.config import TestConfig, test_config
 
 
 def test_model(

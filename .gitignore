@@ -1,5 +1,6 @@
 # Data for train model
-data/
+data/datasets
+data/WaterMeters
 
 # YOLO data
 models/train
