@@ -1,4 +1,10 @@
 from dataclasses import dataclass
+from enum import Enum, auto
+
+
+class Task(Enum):
+    SEGMENT = auto()
+    DETECT = auto()
 
 
 @dataclass

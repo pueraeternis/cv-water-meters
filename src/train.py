@@ -5,6 +5,7 @@ from ultralytics import YOLO
 from ultralytics.models.yolo.segment import SegmentationTrainer
 
 from config import (
+    Task,
     TrainConfig,
     dataset_config_digits,
     dataset_config_panels,
@@ -13,11 +14,6 @@ from config import (
 )
 from datasets import copy_split_data, create_config_file, train_test_split
 from labels import extract_label_studio_labels, extract_labels
-
-
-class Task(Enum):
-    SEGMENT = auto()
-    DETECT = auto()
 
 
 def train_model(task: Task, config: TrainConfig, epochs: int) -> None:
