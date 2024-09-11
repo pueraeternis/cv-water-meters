@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-from src.digits.config import TestConfig, test_config
+from config import TestConfig, test_config_digits, test_config_panels
 
 
 def test_model(
@@ -28,5 +28,10 @@ def test_model(
     )
 
 
+def main():
+    test_model(task="segment", config=test_config_panels)
+    test_model(task="detect", config=test_config_digits)
+
+
 if __name__ == "__main__":
-    test_model(task="detect", config=test_config)
+    main()
