@@ -12,6 +12,13 @@
 
 Модель возвращает "сырые" данные, которые подлежат соотвествующей обработки (конкретная реализация зависит от дальнейшего развития проекта).
 
+<p align="left">
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_1029_value_409_55.jpg" alt="Image 1" width="25%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_12_value_414_676.jpg" alt="Image 2" width="25%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_27_value_140_738.jpg" alt="Image 3" width="25%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_28_value_81_998.jpg" alt="Image 4" width="25%" />
+</p>
+
 ## Набор данных
 
 Датасет был собран энтузиастами и выложен на Kaggle. К бесплатному использованию доступны 1244 изображения. Полный датасет автор продает на своем сайте (ссылка есть на Kaggle). Данные были собраны при помощи сервиса Яндекс.Толока по строгим требованиям касательно качества изображений. Автор датасета разметил только панели показаний, поэтому для использования в проекте разметка цифр была проведена отдельно с помощью Label Studio. 
