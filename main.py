@@ -1,3 +1,4 @@
+import os
 import pprint
 from dataclasses import dataclass
 from glob import glob
@@ -11,7 +12,7 @@ from src.predict import (
 from src.visualize import visualize
 
 IMAGES_PATH = "data/images"
-RESULTS_PATH = "data/images/results"
+RESULTS_PATH = os.path.join(IMAGES_PATH, "results")
 MODEL_PANELS = "models/inference/panels_base.pt"
 MODEL_DIGITS = "models/inference/digits_base.pt"
 

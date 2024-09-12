@@ -1,5 +1,3 @@
-from enum import Enum, auto
-
 import torch
 from ultralytics import YOLO
 from ultralytics.models.yolo.segment import SegmentationTrainer
