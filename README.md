@@ -13,10 +13,9 @@
 Модель возвращает "сырые" данные, которые подлежат соотвествующей обработки (конкретная реализация зависит от дальнейшего развития проекта).
 
 <p align="left">
-  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_1029_value_409_55.jpg" alt="Image 1" width="25%" />
-  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_12_value_414_676.jpg" alt="Image 2" width="25%" />
-  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_27_value_140_738.jpg" alt="Image 3" width="25%" />
-  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_28_value_81_998.jpg" alt="Image 4" width="25%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_1029_value_409_55.jpg" alt="Image 1" width="30%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_12_value_414_676.jpg" alt="Image 2" width="30%" />
+  <img src="https://github.com/pueraeternis/cv-water-meters/blob/main/data/images/results/pred_id_27_value_140_738.jpg" alt="Image 3" width="30%" />
 </p>
 
 ## Набор данных
