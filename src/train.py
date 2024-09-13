@@ -51,6 +51,8 @@ def train_model(task: Task, config: TrainConfig, epochs: int) -> None:
 
 
 def train_panels(epochs: int = 1):
+    """Обучает модель определения панели показаний."""
+
     # Конвертация меток в формат YOLO
     extract_labels(dataset_config_panels.labels_data_filepath)
 
@@ -61,12 +63,10 @@ def train_panels(epochs: int = 1):
     )
 
     # Копирование изображений и меток в train, val, test
-    for dir_name, dataset_name in zip(["train", "val", "test"], datasets):
+    for dir_name, path_list in zip(["train", "val", "test"], datasets):
         copy_split_data(
             dir_name,
-            dataset_name,
-            dataset_config_panels.images_data_path,
-            dataset_config_panels.labels_data_path,
+            path_list,
             dataset_config_panels.dataset_path,
         )
 
@@ -82,6 +82,8 @@ def train_panels(epochs: int = 1):
 
 
 def train_digits(epochs: int = 1):
+    """Обучает модель определения значений показаний."""
+
     # Конвертация меток в формат YOLO
     extract_label_studio_labels(
         dataset_config_digits.labels_data_path,
@@ -96,12 +98,10 @@ def train_digits(epochs: int = 1):
     )
 
     # Копирование изображений и меток в train, val, test
-    for dir_name, dataset_name in zip(["train", "val", "test"], datasets):
+    for dir_name, path_list in zip(["train", "val", "test"], datasets):
         copy_split_data(
             dir_name,
-            dataset_name,
-            dataset_config_digits.images_data_path,
-            dataset_config_digits.labels_output_path,
+            path_list,
             dataset_config_digits.dataset_path,
         )
 
@@ -114,3 +114,7 @@ def train_digits(epochs: int = 1):
 
     # Обучение модели
     train_model(Task.DETECT, train_config_digits, epochs)
+
+
+if __name__ == "__main__":
+    train_panels()

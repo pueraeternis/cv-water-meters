@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import cv2
 from cv2.typing import MatLike
@@ -84,17 +84,17 @@ def draw_digits_rectangle(
 
 
 def visualize(
-    image_path: str,
+    image_path: Path,
     panels: list[DetectedObject],
     digits: list[DetectedObject],
-    output_dir: str,
+    output_dir: Path,
 ) -> None:
     """Наносит результаты модели на изображение с улучшенной визуализацией."""
 
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    image_name = os.path.basename(image_path)
-    image = cv2.imread(image_path)
+    image_name = image_path.name
+    image = cv2.imread(str(image_path))
     target_panels = [panel for panel in panels if panel.image == image_name][0]
     target_digits = [digit for digit in digits if digit.image == image_name][0]
 
@@ -103,5 +103,5 @@ def visualize(
         image, target_digits.names, target_digits.cls, target_digits.xyxy
     )
 
-    out = os.path.join(output_dir, f"pred_{image_name}")
-    cv2.imwrite(out, image)
+    out_path = output_dir / f"pred_{image_name}"
+    cv2.imwrite(str(out_path), image)

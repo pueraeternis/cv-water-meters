@@ -1,7 +1,5 @@
-import os
 import pprint
-from dataclasses import dataclass
-from glob import glob
+from pathlib import Path
 
 from src.predict import (
     extract_value,
@@ -11,22 +9,23 @@ from src.predict import (
 )
 from src.visualize import visualize
 
-IMAGES_PATH = "data/images"
-RESULTS_PATH = os.path.join(IMAGES_PATH, "results")
-MODEL_PANELS = "models/inference/panels_base.pt"
-MODEL_DIGITS = "models/inference/digits_base.pt"
+IMAGES_PATH = Path("data/images")
+RESULTS_PATH = IMAGES_PATH / "results"
+MODEL_PANELS = Path("models/inference/panels_base.pt")
+MODEL_DIGITS = Path("models/inference/digits_base.pt")
 
 
 def main():
     # Прочитать изображения из папки
-    images = glob(f"{IMAGES_PATH}/*.jpg")
+    images = IMAGES_PATH.glob("*.jpg")
+    images_str = [str(path) for path in images]
 
     # Найти панели показаний на изображениях счетчиков
-    panels_results = predict("segment", images, MODEL_PANELS, IMAGES_PATH)
+    panels_results = predict("segment", images_str, MODEL_PANELS, IMAGES_PATH)
     panels = extraxt_detected_object_from_results(panels_results)
 
     # Определить показания
-    digits_results = predict("detect", images, MODEL_DIGITS, IMAGES_PATH)
+    digits_results = predict("detect", images_str, MODEL_DIGITS, IMAGES_PATH)
     digits = extraxt_detected_object_from_results(digits_results)
 
     digits = process_digits_results(digits)

@@ -1,49 +1,42 @@
 import os
 import random
 import shutil
+from pathlib import Path
 
 import yaml
 
 
-def is_file(directory: str, filename: str) -> bool:
-    """Проверяет, является ли объект по заданному пути файлом."""
-
-    return os.path.isfile(os.path.join(directory, filename))
-
-
 def copy_split_data(
-    split_name: str,
-    files: list[tuple[str, str]],
-    image_dir: str,
-    label_dir: str,
-    output_dir: str,
+    dir_name: str,
+    path_list: list[tuple[Path, Path]],
+    output_dir: Path,
 ):
     """Копирует изображения и метки в train, val, test."""
 
-    split_image_dir = os.path.join(output_dir, split_name, "images")
-    split_label_dir = os.path.join(output_dir, split_name, "labels")
+    split_image_dir = output_dir / dir_name / "images"
+    split_label_dir = output_dir / dir_name / "labels"
 
-    os.makedirs(split_image_dir, exist_ok=True)
-    os.makedirs(split_label_dir, exist_ok=True)
+    split_image_dir.mkdir(parents=True, exist_ok=True)
+    split_label_dir.mkdir(parents=True, exist_ok=True)
 
-    for img_file, lbl_file in files:
-        shutil.copy(os.path.join(image_dir, img_file), split_image_dir)
-        shutil.copy(os.path.join(label_dir, lbl_file), split_label_dir)
+    for img_file, lbl_file in path_list:
+        shutil.copy(img_file, split_image_dir)
+        shutil.copy(lbl_file, split_label_dir)
 
 
 def train_test_split(
-    image_dir: str,
-    label_dir: str,
+    image_dir: Path,
+    label_dir: Path,
     split_ratios: tuple[float, float, float] = (0.7, 0.15, 0.15),
     seed: int = 42,
-) -> tuple[list[tuple[str, str]], list[tuple[str, str]], list[tuple[str, str]]]:
+) -> tuple[list[tuple[Path, Path]], list[tuple[Path, Path]], list[tuple[Path, Path]]]:
     """Разделяет набор данных на train, val, test."""
 
     if sum(split_ratios) != 1:
         raise ValueError("The sum of the shares must be equal to 1")
 
-    image_files = sorted([f for f in os.listdir(image_dir) if is_file(image_dir, f)])
-    label_files = sorted([f for f in os.listdir(label_dir) if is_file(label_dir, f)])
+    image_files = sorted([p for p in image_dir.iterdir() if p.is_file()])
+    label_files = sorted([p for p in label_dir.iterdir() if p.is_file()])
 
     if len(image_files) != len(label_files):
         raise ValueError("The number of images and labels must match")
@@ -64,12 +57,12 @@ def train_test_split(
 
 
 def create_config_file(
-    dataset_path: str, class_labels: dict[int, str], yaml_path: str
+    dataset_path: Path, class_labels: dict[int, str], yaml_path: Path
 ) -> None:
     """Создает YAML-файл для обучения YOLO."""
 
     data = {
-        "path": dataset_path,
+        "path": str(dataset_path),
         "train": "train/images",
         "val": "val/images",
         "test": "test/images",
@@ -78,7 +71,7 @@ def create_config_file(
     names_data = class_labels
 
     try:
-        with open(yaml_path, "w", encoding="utf-8") as yaml_file:
+        with yaml_path.open(mode="w", encoding="utf-8") as yaml_file:
             yaml.dump(
                 data,
                 yaml_file,

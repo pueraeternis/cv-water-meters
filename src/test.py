@@ -1,16 +1,16 @@
 from ultralytics import YOLO
 
-from config import TestConfig, test_config_digits, test_config_panels
+from config import Task, TestConfig, test_config_digits, test_config_panels
 
 
 def test_model(
-    task: str,
+    task: Task,
     config: TestConfig,
 ) -> None:
     """Определяет объекты на изображении."""
 
     # Загрузить модель
-    model = YOLO(config.model_path, task=task)
+    model = YOLO(config.model_path, task=task.value)
 
     # Получить предсказания
     model(
@@ -29,8 +29,8 @@ def test_model(
 
 
 def main():
-    test_model(task="segment", config=test_config_panels)
-    test_model(task="detect", config=test_config_digits)
+    test_model(Task.SEGMENT, config=test_config_panels)
+    test_model(Task.DETECT, config=test_config_digits)
 
 
 if __name__ == "__main__":

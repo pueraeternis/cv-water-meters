@@ -1,18 +1,17 @@
 import json
-import os
+from pathlib import Path
 
 import pandas as pd
 
 
-def extract_labels(labels_data_filepath: str) -> None:
+def extract_labels(labels_data_filepath: Path) -> None:
     """Извлекает координаты полигона панели счетчика."""
 
     data = pd.read_csv(labels_data_filepath)
     for _, row in data.iterrows():
-        image_name = row["photo_name"]
-        labels_path = os.path.join(os.path.dirname(labels_data_filepath), "labels")
+        image_path = labels_data_filepath.parent / "labels" / Path(row["photo_name"])
         label_str = extract_label_from_row(row)
-        save_label(image_name, label_str, labels_path)
+        save_label(label_str, image_path)
 
 
 def extract_label_from_row(row: pd.Series) -> str:
@@ -29,36 +28,29 @@ def extract_label_from_row(row: pd.Series) -> str:
     return label_str
 
 
-def save_label(image_name: str, label_str: str, labels_path: str) -> None:
+def save_label(label_str: str, image_path: Path) -> None:
     """Сохраняет разметку панели счетчика в текстовый файл."""
 
-    os.makedirs(labels_path, exist_ok=True)
-
-    filename, _ = os.path.splitext(image_name)
-    label_name = f"{filename}.txt"
-
-    label_path = os.path.join(labels_path, label_name)
-    with open(label_path, "wt", encoding="utf-8") as f:
-        f.write(label_str)
+    image_path.parent.mkdir(parents=True, exist_ok=True)
+    label_path = image_path.with_suffix(".txt")
+    label_path.write_text(label_str, encoding="utf-8")
 
 
 def extract_label_studio_labels(
-    labels_data_path: str, labels_output_path: str, class_labels: dict[int, str]
+    labels_data_path: Path, labels_output_path: Path, class_labels: dict[int, str]
 ) -> None:
     """Создает датасет для обучения YOLO."""
 
-    for labels in os.listdir(labels_data_path):
-        labels_path = os.path.join(labels_data_path, labels)
-        with open(labels_path, "rt", encoding="utf-8") as f:
+    for labels_path in labels_data_path.glob("*.txt"):
+        with labels_path.open(encoding="utf-8") as f:
             data = json.load(f)
 
         labels_str = convert_labels(data, class_labels)
-        basename = os.path.basename(data["task"]["data"]["image"])
-        file_name = os.path.splitext(basename)[0]
+        file_name = Path(data["task"]["data"]["image"])
 
-        os.makedirs(labels_output_path, exist_ok=True)
-        filepath = os.path.join(labels_output_path, f"{file_name}.txt")
-        with open(filepath, "wt", encoding="utf-8") as f:
+        labels_output_path.mkdir(parents=True, exist_ok=True)
+        output = labels_output_path / file_name.with_suffix(".txt")
+        with output.open(encoding="utf-8") as f:
             for l_str in labels_str:
                 f.write(f"{l_str}\n")
 

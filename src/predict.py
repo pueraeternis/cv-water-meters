@@ -1,6 +1,6 @@
 import math
-import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 from ultralytics import YOLO
@@ -17,7 +17,7 @@ class DetectedObject:
 
 
 def predict(
-    task: str, images: list[str], model_path: str, project_path: str
+    task: str, images: list[str], model_path: Path, project_path: Path
 ) -> list[Results]:
     """Возвращает предсказания модели."""
 
@@ -48,7 +48,7 @@ def extraxt_detected_object_from_results(
 
     objects = []
     for result in results:
-        image = os.path.basename(result.path)
+        image = Path(result.path).name
         names = result.names
         cls = result.boxes.cls.cpu().numpy().astype("int").tolist()  # type: ignore
         conf = result.boxes.conf.cpu().tolist()  # type: ignore
