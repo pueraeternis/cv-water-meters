@@ -1,10 +1,13 @@
+from typing import Dict, List, Tuple
+
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 
 from src.predict import DetectedObject
 
-COLORS = {
+# Цвета для визуализации
+COLORS: Dict[int, Tuple[int, int, int]] = {
     0: (255, 0, 0),
     1: (0, 255, 0),
     2: (0, 0, 255),
@@ -25,42 +28,48 @@ TEXT_COLOR = (255, 255, 255)
 
 def draw_transparent_rectangle(
     image: MatLike,
-    start_point: tuple[int, int],
-    end_point: tuple[int, int],
-    color: tuple[int, int, int],
+    start_point: Tuple[int, int],
+    end_point: Tuple[int, int],
+    color: Tuple[int, int, int],
     thickness: int,
     alpha: float = 0.8,
-):
-    """Наносит прямоугольник меток с прозрачностью."""
+) -> MatLike:
+    """Наносит прямоугольник с прозрачностью."""
 
     overlay = image.copy()
     cv2.rectangle(overlay, start_point, end_point, color, thickness)
     return cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
 
 
-def draw_panel_rectangle(image: MatLike, coords: list[int]):
-    """Наносит панель счетчика."""
+def draw_panel_rectangle(
+    image: MatLike, coords: List[Tuple[int, int, int, int]]
+) -> MatLike:
+    """Наносит панели счетчика."""
 
     for coord in coords:
-        x1, y1, x2, y2 = map(int, coord)  # type: ignore
+        x1, y1, x2, y2 = map(int, coord)
         image = draw_transparent_rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 7)
-
     return image
 
 
 def draw_digits_rectangle(
-    image: MatLike, classlabels: dict[int, str], classes: list[int], coords: list[int]
+    image: MatLike,
+    classlabels: Dict[int, str],
+    classes: List[int],
+    coords: List[Tuple[int, int, int, int]],
 ) -> MatLike:
-    for cls, coord in zip(classes, coords):
-        x1, y1, x2, y2 = map(int, coord)  # type: ignore
+    """Наносит прямоугольники и текст для цифр."""
 
+    for cls, coord in zip(classes, coords):
+        x1, y1, x2, y2 = map(int, coord)
         image = draw_transparent_rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 3)
 
         text = classlabels[cls]
-        text_color_bg = COLORS[cls]
+        text_color_bg = COLORS.get(cls, (0, 0, 0))  # Цвет по умолчанию
         text_size, _ = cv2.getTextSize(text, FONT, FONT_SCALE, FONT_THICKNESS)
         text_w, text_h = text_size
 
+        # Рисуем фон для текста
         image = draw_transparent_rectangle(
             image,
             (x1 - 2, y1 - text_h - 40),
@@ -69,32 +78,26 @@ def draw_digits_rectangle(
             -1,
         )
 
+        # Рисуем текст
         cv2.putText(
-            image,
-            text,
-            (x1 + 5, y1 - 26),
-            FONT,
-            FONT_SCALE,
-            TEXT_COLOR,
-            FONT_THICKNESS,
+            image, text, (x1 + 5, y1 - 26), FONT, FONT_SCALE, TEXT_COLOR, FONT_THICKNESS
         )
 
     return image
 
 
 def visualize(
-    image: np.ndarray,
-    panels: list[DetectedObject],
-    digits: list[DetectedObject],
+    image: np.ndarray, panels: List[DetectedObject], digits: List[DetectedObject]
 ) -> MatLike:
-    """Наносит результаты модели на изображение с улучшенной визуализацией."""
+    """Наносит результаты модели на изображение с визуализацией панелей и цифр."""
 
-    target_panels = panels[0]
-    target_digits = digits[0]
+    if panels and digits:
+        target_panels = panels[0]
+        target_digits = digits[0]
 
-    image = draw_panel_rectangle(image, target_panels.xyxy)
-    image = draw_digits_rectangle(
-        image, target_digits.names, target_digits.cls, target_digits.xyxy
-    )
+        image = draw_panel_rectangle(image, target_panels.xyxy)  # type: ignore
+        image = draw_digits_rectangle(
+            image, target_digits.names, target_digits.cls, target_digits.xyxy  # type: ignore
+        )
 
     return image
