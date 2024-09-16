@@ -68,4 +68,4 @@ async def read_results(image: UploadFile = File(...)) -> Dict[str, str]:
     digits = extract_detected_object_from_results(digits_results)
     digits = process_digits_results(digits)
     value = extract_value(digits[0])
-    return {"description": f"Values: {value}"}
+    return {"value": f"{value}"}
