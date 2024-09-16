@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  
+  fast-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: water-meters
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./app:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
