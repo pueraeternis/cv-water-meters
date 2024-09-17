@@ -1,4 +1,3 @@
-import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
@@ -52,14 +51,21 @@ def extract_detected_object_from_results(
     return objects
 
 
-def process_digits_results(digits: List[DetectedObject]) -> List[DetectedObject]:
+def process_digits_results(
+    panels: List[DetectedObject], digits: List[DetectedObject]
+) -> List[DetectedObject]:
     """Удаляет дубли классов, выбирая наиболее вероятные."""
 
-    def calculate_distance(x1, y1, x2, y2, x3, y3):
-        """Вычисляет расстояние от точки до прямой."""
-        numerator = abs((y2 - y1) * x3 - (x2 - x1) * y3 + x2 * y1 - y2 * x1)
-        denominator = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
-        return numerator / denominator
+    def is_inside_panel(x1: int, y1: int, x2: int, y2: int) -> bool:
+        """Проверяет, находится ли цифра внутри панели."""
+
+        # Получить центр цифры и координаты панели
+        center = x1 + (x2 - x1), y1 + (y2 - y1)
+        panel_x1, panel_y1, panel_x2, panel_y2 = panels[0].xyxy[0]
+        # Проверить, является ли цифра внутри панели
+        if (panel_x1 < center[0] < panel_x2) and (panel_y1 < center[1] < panel_y2):
+            return True
+        return False
 
     new_digits = []
     for pred_dig in digits:
@@ -76,13 +82,12 @@ def process_digits_results(digits: List[DetectedObject]) -> List[DetectedObject]
             subset=["x1_floor"], keep="last", inplace=True, ignore_index=True
         )
 
-        x1, y1 = digits_df.iloc[0][["x1", "y1"]]
-        x2, y2 = digits_df.iloc[-1][["x1", "y1"]]
-        digits_df["distance"] = digits_df.apply(
-            lambda row: calculate_distance(x1, y1, x2, y2, row["x1"], row["y1"]), axis=1
+        digits_df["inside_panel"] = digits_df.apply(
+            lambda row: is_inside_panel(row["x1"], row["y1"], row["x2"], row["y2"]),
+            axis=1,
         )
 
-        filtered_df = digits_df[digits_df["distance"] < 20].copy()
+        filtered_df = digits_df[digits_df["inside_panel"]].copy()
         filtered_df.reset_index(drop=True, inplace=True)
 
         pred_dig.cls = filtered_df["cls"].tolist()
