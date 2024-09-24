@@ -4,6 +4,7 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+from shapely import Polygon
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
@@ -51,45 +52,96 @@ def extract_detected_object_from_results(
     return objects
 
 
+def is_inside_panel(
+    digit_coords: tuple[int, int, int, int], panel_coords: tuple[int, int, int, int]
+) -> bool:
+    """Проверяет, пересекается ли полигон цифры с полигоном панели."""
+    digit_poly = Polygon(
+        [
+            (digit_coords[0], digit_coords[1]),
+            (digit_coords[2], digit_coords[1]),
+            (digit_coords[2], digit_coords[3]),
+            (digit_coords[0], digit_coords[3]),
+        ]
+    )
+    panel_poly = Polygon(
+        [
+            (panel_coords[0], panel_coords[1]),
+            (panel_coords[2], panel_coords[1]),
+            (panel_coords[2], panel_coords[3]),
+            (panel_coords[0], panel_coords[3]),
+        ]
+    )
+    return digit_poly.intersects(panel_poly)
+
+
+def build_polygon(coords: list[int]) -> Polygon:
+    """Строит полигон по координатам."""
+    poly = Polygon(
+        [
+            (coords[0], coords[1]),
+            (coords[2], coords[1]),
+            (coords[2], coords[3]),
+            (coords[0], coords[3]),
+        ]
+    )
+    return poly
+
+
+def filter_duplicates_by_confidence(df: pd.DataFrame) -> pd.DataFrame:
+    """Удаляет дубликаты на основе x1 координат и уверенности."""
+
+    df.sort_values(by="x1", inplace=True, ignore_index=True)
+
+    idx_for_drop = []
+    for i in range(1, len(df)):
+        poly1 = build_polygon(df.iloc[i - 1]["xyxy"])
+        poly2 = build_polygon(df.iloc[i]["xyxy"])
+        intersection = poly1.intersection(poly2)
+        overlap = intersection.area / poly1.area
+
+        if overlap > 0.5:
+            df_2rows = df.iloc[i - 1 : i + 1]
+            min_conf_index = df_2rows["conf"].idxmin()
+            idx_for_drop.append(min_conf_index)
+
+    df.drop(idx_for_drop, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    return df
+
+
 def process_digits_results(
     panels: List[DetectedObject], digits: List[DetectedObject]
 ) -> List[DetectedObject]:
-    """Удаляет дубли классов, выбирая наиболее вероятные."""
-
-    def is_inside_panel(x1: int, y1: int, x2: int, y2: int) -> bool:
-        """Проверяет, находится ли цифра внутри панели."""
-
-        # Получить центр цифры и координаты панели
-        center = x1 + (x2 - x1), y1 + (y2 - y1)
-        panel_x1, panel_y1, panel_x2, panel_y2 = panels[0].xyxy[0]
-        # Проверить, является ли цифра внутри панели
-        if (panel_x1 < center[0] < panel_x2) and (panel_y1 < center[1] < panel_y2):
-            return True
-        return False
+    """Удаляет дубликаты классов цифр, выбирая наиболее вероятные, которые пересекаются с панелями."""
 
     new_digits = []
+    panel_coords = panels[0].xyxy[0]
+
     for pred_dig in digits:
+        # Преобразование в DataFrame
         digits_df = pd.DataFrame(
             {"cls": pred_dig.cls, "conf": pred_dig.conf, "xyxy": pred_dig.xyxy}
         )
-
         digits_df[["x1", "y1", "x2", "y2"]] = pd.DataFrame(
             digits_df["xyxy"].tolist(), index=digits_df.index
         )
-        digits_df["x1_floor"] = digits_df["x1"].round(-1)
-        digits_df.sort_values(by=["x1_floor", "conf"], inplace=True, ignore_index=True)
-        digits_df.drop_duplicates(
-            subset=["x1_floor"], keep="last", inplace=True, ignore_index=True
-        )
 
+        # Удаление дубликатов
+        digits_df = filter_duplicates_by_confidence(digits_df)
+
+        # Проверка, пересекаются ли цифры с панелью
         digits_df["inside_panel"] = digits_df.apply(
-            lambda row: is_inside_panel(row["x1"], row["y1"], row["x2"], row["y2"]),
+            lambda row: is_inside_panel(
+                (row["x1"], row["y1"], row["x2"], row["y2"]), panel_coords  # type: ignore
+            ),
             axis=1,
-        )
+        )  # type: ignore
 
+        # Фильтрация по нахождению внутри панели
         filtered_df = digits_df[digits_df["inside_panel"]].copy()
-        filtered_df.reset_index(drop=True, inplace=True)
 
+        # Обновление результатов
         pred_dig.cls = filtered_df["cls"].tolist()
         pred_dig.conf = filtered_df["conf"].tolist()
         pred_dig.xyxy = filtered_df["xyxy"].tolist()
